@@ -4,6 +4,7 @@ import instance from "../../config/axios_config.ts";
 import {ACCESS_TOKEN, API_URL, USER_DATA} from "../../config/constants.ts";
 import {useAuthStore} from "../../store/authStore.ts";
 import {useNavigate} from "react-router-dom";
+import {BiHide, BiShow} from "react-icons/bi";
 
 export const Login: FC = (): JSX.Element => {
     const navigate=useNavigate();
@@ -45,12 +46,15 @@ export const Login: FC = (): JSX.Element => {
                         <label htmlFor="username" className="label-text">User name <span
                             className="star">&lowast;</span></label>
                         <input type="text" name="username" required className="input-text"
-                               onChange={(e) => setUsername(e.target.value)}/>
+                               onChange={(e) => setUsername(e.target.value)} value={username}/>
                     </div>
                     <div className="input-box">
                         <label htmlFor="password" className="label-text">Password <span className="star">&lowast;</span></label>
-                        <input type="password" name="password" required className="input-text"
-                               onChange={(e) => setPassword(e.target.value)}/>
+                        <input type={showPassword ? "text" : "password"} name="password" required className="input-text"
+                               onChange={(e) => setPassword(e.target.value)} value={password}/>
+                        <div className="show-icon" onClick={() => setShowPassword(r => !r)}>
+                            {showPassword ? <BiHide /> : <BiShow/>}
+                        </div>
                     </div>
                     <button className="btn" type="submit">Log in</button>
                 </form>
