@@ -9,7 +9,7 @@ import {useNavigate} from "react-router-dom";
 import {useAuthStore} from "../../store/authStore.ts";
 
 export const Main: FC = (): JSX.Element => {
-    const navigate=useNavigate();
+    const navigate = useNavigate();
     const {setUserAndAuth} = useAuthStore()
     const [data, setData] = useState<any>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -76,7 +76,7 @@ export const Main: FC = (): JSX.Element => {
         }
     }, [date]);
 
-    const Logout = function (){
+    const Logout = function () {
         localStorage.removeItem(ACCESS_TOKEN);
         localStorage.removeItem(USER_DATA);
         setUserAndAuth({
@@ -84,171 +84,181 @@ export const Main: FC = (): JSX.Element => {
             user: null
         });
         navigate("/login");
-
     }
 
-    console.log(data)
+    const getTotals = function (k: string | undefined, c: string | undefined, key: string) {
+        let arr: any = []
+        if (k) {
+            let kData = data?.[k];
+            if (c) {
+                arr = kData?.[c] ?? []
+            } else {
+                arr = Object.values(kData ?? {})?.flat()
+            }
+        } else {
+            arr = Object.values(data ?? {})?.map((obj: any) => Object.values(obj ?? {})?.flat())?.flat();
+        }
+        let dArr = arr?.map((a: any) => a?.[key])?.filter(a => a);
+        return dArr?.length > 0 ? dArr?.length === 1 ? dArr?.[0] : dArr?.reduce((a: number, b: number) => a + b) : 0
+    }
 
-    if (!isLoading && Object.entries(data)?.length !== 0) {
-        return (
-            <div className="container" style={{alignItems: "start"}}>
-                <div className="table-body">
-                    <div className="input-container">
-                        <div className="input-box-table">
-                            <label htmlFor="startDate" className="label-text" style={{fontSize: "16px"}}>Дата
-                                начала</label>
-                            <input className="input-table" name="startDate" onChange={(e) => {
-                                let val = e?.target?.value;
-                                if (val) {
-                                    setDate({
-                                        ...date,
-                                        from: val
-                                    })
-                                }
-                            }} type="date" value={date?.from}/>
-                        </div>
-                        <div className="input-box-table">
-                            <label htmlFor="endDate" className="label-text" style={{fontSize: "16px"}}>Дата
-                                окончания</label>
-                            <input className="input-table" onChange={(e) => {
-                                let val = e?.target?.value;
-                                if (val) {
-                                    setDate({
-                                        ...date,
-                                        to: val
-                                    })
-                                }
-                            }} type="date" value={date?.to}/>
-                        </div>
-                        <div className="logout-box" onClick={Logout}>
-                            <MdLogout size={22} className="logout-icon"/>
-                        </div>
+    return (
+        <div className="container" style={{alignItems: "start"}}>
+            <div className="table-body">
+                <div className="input-container">
+                    <div className="input-box-table">
+                        <label htmlFor="startDate" className="label-text" style={{fontSize: "16px"}}>Дата
+                            начала</label>
+                        <input className="input-table" name="startDate" onChange={(e) => {
+                            let val = e?.target?.value;
+                            if (val) {
+                                setDate({
+                                    ...date,
+                                    from: val
+                                })
+                            }
+                        }} type="date" value={date?.from}/>
                     </div>
-                    <div className="table-container">
-                        <table className="table-box">
-                            <thead style={{position: "sticky", top: "0", backgroundColor: "white"}}>
-                            <tr>
-                                <th rowSpan={2} className="table-th bg-gray-100">Наименование</th>
-                                <th rowSpan={2} className="table-th bg-gray-100">Цвет</th>
-                                <th rowSpan={2} className="table-th bg-gray-100">Ед изм</th>
-                                <th rowSpan={2} className="table-th bg-gray-100">Артикул</th>
-                                <th rowSpan={2} className="table-th bg-gray-100">Цена учетная</th>
-                                <th colSpan={2} className="table-th bg-green-100">Сальдо начало пероида</th>
-                                <th colSpan={2} className="table-th bg-blue-100">Приход</th>
-                                <th colSpan={2} className="table-th bg-red-100">Расход</th>
-                                <th colSpan={2} className="table-th bg-yellow-100">Сальдо на конец периода</th>
-                            </tr>
-                            <tr>
-                                <th className="table-th bg-green-100">Кол-во</th>
-                                <th className="table-th bg-green-100">Сумма</th>
-                                <th className="table-th bg-blue-100">Кол-во</th>
-                                <th className="table-th bg-blue-100">Сумма</th>
-                                <th className="table-th bg-red-100">Кол-во</th>
-                                <th className="table-th bg-red-100">Сумма</th>
-                                <th className="table-th bg-yellow-100">Кол-во</th>
-                                <th className="table-th bg-yellow-100">Сумма</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr className="bg-gray-50">
-                                <td className="table-td pl-md td-bold">Итог</td>
-                                <td className="table-td text-center td-bold"></td>
-                                <td className="table-td text-center td-bold"></td>
-                                <td className="table-td text-center td-bold"></td>
-                                <td className="table-td text-center td-bold"></td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                                <td className="table-td text-center td-bold">0.00</td>
-                            </tr>
-                            </tbody>
-                            {(Object.entries(data ?? {}))?.map(([k, v]: any, index: number) =>
-                                <tbody key={index}>
-                                <tr>
-                                    <td className="table-td pl-md td-bold cursor-pointer"
-                                        onClick={() => setCollapsedParents((collapsedParents?.includes(k) ? collapsedParents?.filter(pn => pn !== k) : [...collapsedParents, k]) as any)}>
-                                        <p className="m-0 td-text">
-                                            {!collapsedParents?.includes(k) ? <CiSquareMinus size={20}/> :
-                                                <CiSquarePlus size={20}/>}
-                                            <span className="mt-2">{k}</span>
-                                        </p>
-                                    </td>
-                                    <td className="table-td text-center td-bold"></td>
-                                    <td className="table-td text-center td-bold"></td>
-                                    <td className="table-td text-center td-bold"></td>
-                                    <td className="table-td text-center td-bold"></td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                    <td className="table-td text-center td-bold">0.00</td>
-                                </tr>
-                                {
-                                    collapsedParents?.includes(k) ? "" : Object.entries(v ?? {})?.map(([c, items], index) =>
-                                        <React.Fragment key={index}>
-                                            <tr>
-                                                <td className="table-td pl-lg td-bold cursor-pointer"
-                                                    onClick={() => setCollapsedCategories((collapsedCategories?.includes(c) ? collapsedCategories?.filter(pn => pn !== c) : [...collapsedCategories, c]) as any)}>
-                                                    <p className="m-0 td-text">
-                                                        {!collapsedCategories?.includes(c) ?
-                                                            <CiSquareMinus size={20}/> :
-                                                            <CiSquarePlus size={20}/>}
-                                                        <span className="mt-2">{c}</span>
-                                                    </p>
-                                                </td>
-                                                <td className="table-td text-center td-bold"></td>
-                                                <td className="table-td text-center td-bold"></td>
-                                                <td className="table-td text-center td-bold"></td>
-                                                <td className="table-td text-center td-bold"></td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                                <td className="table-td text-center td-bold">0.00</td>
-                                            </tr>
-                                            {
-                                                collapsedCategories?.includes(c) ? "" : items?.map((itm, index) => <tr
-                                                    key={index}>
-                                                    <td className="table-td pl-lgx cursor-pointer">
-                                                        <p className="m-0 td-text fs-15">
-                                                            {index + 1}.
-                                                            <span className="text-blue-500">{itm?.name}</span>
-                                                        </p>
-                                                    </td>
-                                                    <td className="table-td text-center">{itm?.color?.name}</td>
-                                                    <td className="table-td text-center">{itm?.unit}</td>
-                                                    <td className="table-td text-center"></td>
-                                                    <td className="table-td text-center">{itm?.last_price?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_start_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_start_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_income_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_income_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_outgo_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_outgo_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_end_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                    <td className="table-td text-center">{itm?.remind_end_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                </tr>)
-                                            }
-                                        </React.Fragment>)
-                                }
-                                </tbody>
-                            )}
-                        </table>
+                    <div className="input-box-table">
+                        <label htmlFor="endDate" className="label-text" style={{fontSize: "16px"}}>Дата
+                            окончания</label>
+                        <input className="input-table" onChange={(e) => {
+                            let val = e?.target?.value;
+                            if (val) {
+                                setDate({
+                                    ...date,
+                                    to: val
+                                })
+                            }
+                        }} type="date" value={date?.to}/>
+                    </div>
+                    <div className="logout-box" onClick={Logout}>
+                        <MdLogout size={22} className="logout-icon"/>
                     </div>
                 </div>
+                <div className="table-container">
+                    {isLoading && <div className="linear-loading"></div>}
+                    <table className="table-box">
+                        <thead style={{position: "sticky", top: "0", backgroundColor: "white"}}>
+                        <tr>
+                            <th rowSpan={2} className="table-th bg-gray-100">Наименование</th>
+                            <th rowSpan={2} className="table-th bg-gray-100">Цвет</th>
+                            <th rowSpan={2} className="table-th bg-gray-100">Ед изм</th>
+                            <th rowSpan={2} className="table-th bg-gray-100">Артикул</th>
+                            <th rowSpan={2} className="table-th bg-gray-100">Цена учетная</th>
+                            <th colSpan={2} className="table-th bg-green-100">Сальдо начало пероида</th>
+                            <th colSpan={2} className="table-th bg-blue-100">Приход</th>
+                            <th colSpan={2} className="table-th bg-red-100">Расход</th>
+                            <th colSpan={2} className="table-th bg-yellow-100">Сальдо на конец периода</th>
+                        </tr>
+                        <tr>
+                            <th className="table-th bg-green-100">Кол-во</th>
+                            <th className="table-th bg-green-100">Сумма</th>
+                            <th className="table-th bg-blue-100">Кол-во</th>
+                            <th className="table-th bg-blue-100">Сумма</th>
+                            <th className="table-th bg-red-100">Кол-во</th>
+                            <th className="table-th bg-red-100">Сумма</th>
+                            <th className="table-th bg-yellow-100">Кол-во</th>
+                            <th className="table-th bg-yellow-100">Сумма</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr className="bg-gray-50">
+                            <td className="table-td pl-md td-bold">Итог</td>
+                            <td className="table-td text-center td-bold"></td>
+                            <td className="table-td text-center td-bold"></td>
+                            <td className="table-td text-center td-bold"></td>
+                            <td className="table-td text-center td-bold"></td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_start_amount")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_start_sum")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_income_amount")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_income_sum")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_outgo_amount")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_outgo_sum")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_end_amount")}</td>
+                            <td className="table-td text-center td-bold">{getTotals(undefined, undefined, "remind_end_sum")}</td>
+                        </tr>
+                        </tbody>
+                        {(Object.entries(data ?? {}))?.map(([k, v]: any, index: number) =>
+                            <tbody key={index}>
+                            <tr>
+                                <td className="table-td pl-md td-bold cursor-pointer"
+                                    onClick={() => setCollapsedParents((collapsedParents?.includes(k) ? collapsedParents?.filter(pn => pn !== k) : [...collapsedParents, k]) as any)}>
+                                    <p className="m-0 td-text">
+                                        {!collapsedParents?.includes(k) ? <CiSquareMinus size={20}/> :
+                                            <CiSquarePlus size={20}/>}
+                                        <span className="mt-2">{k}</span>
+                                    </p>
+                                </td>
+                                <td className="table-td text-center td-bold"></td>
+                                <td className="table-td text-center td-bold"></td>
+                                <td className="table-td text-center td-bold"></td>
+                                <td className="table-td text-center td-bold"></td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_start_amount")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_start_sum")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_income_amount")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_income_sum")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_outgo_amount")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_outgo_sum")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_end_amount")}</td>
+                                <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_end_sum")}</td>
+                            </tr>
+                            {
+                                collapsedParents?.includes(k) ? "" : Object.entries(v ?? {})?.map(([c, items], index) =>
+                                    <React.Fragment key={index}>
+                                        <tr>
+                                            <td className="table-td pl-lg td-bold cursor-pointer"
+                                                onClick={() => setCollapsedCategories((collapsedCategories?.includes(c) ? collapsedCategories?.filter(pn => pn !== c) : [...collapsedCategories, c]) as any)}>
+                                                <p className="m-0 td-text">
+                                                    {!collapsedCategories?.includes(c) ?
+                                                        <CiSquareMinus size={20}/> :
+                                                        <CiSquarePlus size={20}/>}
+                                                    <span className="mt-2">{c}</span>
+                                                </p>
+                                            </td>
+                                            <td className="table-td text-center td-bold"></td>
+                                            <td className="table-td text-center td-bold"></td>
+                                            <td className="table-td text-center td-bold"></td>
+                                            <td className="table-td text-center td-bold"></td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_start_amount")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_start_sum")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_income_amount")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_income_sum")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_outgo_amount")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_outgo_sum")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_end_amount")}</td>
+                                            <td className="table-td text-center td-bold">{getTotals(k, c, "remind_end_sum")}</td>
+                                        </tr>
+                                        {
+                                            collapsedCategories?.includes(c) ? "" : items?.map((itm, index) => <tr
+                                                key={index}>
+                                                <td className="table-td pl-lgx cursor-pointer">
+                                                    <p className="m-0 td-text fs-15">
+                                                        {index + 1}.
+                                                        <span className="text-blue-500">{itm?.name}</span>
+                                                    </p>
+                                                </td>
+                                                <td className="table-td text-center">{itm?.color?.name}</td>
+                                                <td className="table-td text-center">{itm?.unit}</td>
+                                                <td className="table-td text-center"></td>
+                                                <td className="table-td text-center">{itm?.last_price?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_start_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_start_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_income_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_income_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_outgo_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_outgo_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_end_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                <td className="table-td text-center">{itm?.remind_end_sum?.toLocaleString?.("fr-Ca")}</td>
+                                            </tr>)
+                                        }
+                                    </React.Fragment>)
+                            }
+                            </tbody>
+                        )}
+                    </table>
+                </div>
             </div>
-        )
-    } else {
-        <PageLoader/>
-    }
+        </div>
+    )
 }

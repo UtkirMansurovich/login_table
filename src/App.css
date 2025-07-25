@@ -242,3 +242,40 @@
 .bg-gray-50 {
     background-color: oklch(98.5% 0.002 247.839);
 }
+.linear-loading {
+    height: 4px;
+    background-color: #ff0000;
+    position: relative;
+    overflow: hidden;
+}
+.linear-loading:before {
+    content: "";
+    display: block;
+    position: absolute;
+    height: 6px;
+    background-color: #ffffff;
+    width: 50%;
+    top: -1px;
+    left: 0;
+    animation: slide-away 3s infinite linear;
+}
+.linear-loading:after {
+    content: "";
+    display: block;
+    position: absolute;
+    height: 6px;
+    background-color: #ffffff;
+    width: 25%;
+    top: -1px;
+    left: 0;
+    animation: slide-away 2s infinite linear;
+}
+
+@keyframes slide-away {
+    0% {
+        transform: translate(-100%, 0);
+    }
+    100% {
+        transform: translate(400%, 0);
+    }
+}
