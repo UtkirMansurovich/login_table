@@ -9,7 +9,7 @@ import {PageLoader} from "./components/page_loader";
 function App() {
     const {setUserAndAuth, isAuth, loading} = useAuthStore();
     const navigate = useNavigate();
-    let {pathname, search} = useLocation()
+    let {pathname} = useLocation()
 
     useEffect(() => {
         let userData = localStorage.getItem(USER_DATA);

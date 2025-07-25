@@ -1,6 +1,5 @@
 import type {FC, JSX} from "react";
-import {useEffect, useState} from "react";
-import instance from "../../config/axios_config.ts";
+import { useState} from "react";
 import {ACCESS_TOKEN, API_URL, USER_DATA} from "../../config/constants.ts";
 import {useAuthStore} from "../../store/authStore.ts";
 import {useNavigate} from "react-router-dom";
@@ -13,7 +12,7 @@ export const Login: FC = (): JSX.Element => {
     const [password, setPassword] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
-    const onSubmit = async (e) => {
+    const onSubmit = async (e:any) => {
         e.preventDefault();
         try {
             setLoading(true)

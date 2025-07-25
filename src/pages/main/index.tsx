@@ -3,15 +3,58 @@ import {useEffect, useState} from "react";
 import {CiSquareMinus, CiSquarePlus} from "react-icons/ci";
 import React from 'react'
 import {ACCESS_TOKEN, USER_DATA} from "../../config/constants.ts";
-import {PageLoader} from "../../components/page_loader";
 import {MdLogout} from "react-icons/md";
 import {useNavigate} from "react-router-dom";
 import {useAuthStore} from "../../store/authStore.ts";
 
+export type dataType = {
+    name: string,
+    material_id: number,
+    color: any,
+    code: string,
+    last_price: number,
+    min_amount: null,
+    category: string,
+    parent: string,
+    unit: string,
+    width: string,
+    remind_start_amount: number,
+    remind_start_sum: number,
+    remind_income_amount: number,
+    remind_income_sum: number,
+    remind_outgo_amount: number,
+    remind_outgo_sum: number,
+    remind_end_amount: number,
+    remind_end_sum: number,
+}
+
+type keys = "name" |
+    "material_id" |
+    "color" |
+    "code" |
+    "last_price" |
+    "min_amount" |
+    "category" |
+    "parent" |
+    "unit" |
+    "width" |
+    "remind_start_amount" |
+    "remind_start_sum" |
+    "remind_income_amount" |
+    "remind_income_sum" |
+    "remind_outgo_amount" |
+    "remind_outgo_sum" |
+    "remind_end_amount" |
+    "remind_end_sum";
+
 export const Main: FC = (): JSX.Element => {
     const navigate = useNavigate();
     const {setUserAndAuth} = useAuthStore()
-    const [data, setData] = useState<any>({});
+    const [data, setData] = useState<{
+        [key: string]: {
+            [key: string]: dataType[]
+        }
+    }>({});
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [collapsedParents, setCollapsedParents] = useState<string[]>([])
     const [collapsedCategories, setCollapsedCategories] = useState<string[]>([]);
@@ -45,15 +88,15 @@ export const Main: FC = (): JSX.Element => {
                         }
                     });
                     let json = await response?.json();
-                    let parentNames = new Set([...json.map(j => j?.parent)?.filter(a => a)]);
-                    let parents = {}
-                    let categoryNamesAll = [];
+                    let parentNames = new Set<string>([...json.map((j: dataType) => j?.parent)?.filter((a: string) => a)]);
+                    let parents: { [k: string]: { [k: string]: dataType[] } } = {}
+                    let categoryNamesAll: string[] = [];
                     parentNames?.forEach((a) => {
-                        let children = json?.filter(prod => prod?.parent === a);
-                        let categoryNames = new Set([...children?.map(ch => ch?.category)?.filter(c => c)]);
-                        let categories = {}
-                        categoryNames?.forEach((cn) => {
-                            categories[cn] = children?.filter(ch => ch?.category === cn);
+                        let children = json?.filter((prod: dataType) => prod?.parent === a);
+                        let categoryNames = new Set<string>([...children?.map((ch: dataType) => ch?.category)?.filter((c: string) => c)]);
+                        let categories: { [k: string]: dataType[] } = {}
+                        categoryNames?.forEach((cn: string) => {
+                            categories[cn] = children?.filter((ch: dataType) => ch?.category === cn);
                         });
                         parents[a] = categories;
                         categoryNamesAll.push(...categoryNames);
@@ -86,8 +129,8 @@ export const Main: FC = (): JSX.Element => {
         navigate("/login");
     }
 
-    const getTotals = function (k: string | undefined, c: string | undefined, key: string) {
-        let arr: any = []
+    const getTotals = function (k: string | undefined, c: string | undefined, key: keys): number {
+        let arr: dataType[] = [];
         if (k) {
             let kData = data?.[k];
             if (c) {
@@ -96,9 +139,9 @@ export const Main: FC = (): JSX.Element => {
                 arr = Object.values(kData ?? {})?.flat()
             }
         } else {
-            arr = Object.values(data ?? {})?.map((obj: any) => Object.values(obj ?? {})?.flat())?.flat();
+            arr = (Object.values(data ?? {})?.map((obj: any) => Object.values(obj ?? {})?.flat())?.flat() as dataType[]);
         }
-        let dArr = arr?.map((a: any) => a?.[key])?.filter(a => a);
+        let dArr = arr?.map((a: dataType) => a?.[key] ? Number(a?.[key]) : 0);
         return dArr?.length > 0 ? dArr?.length === 1 ? dArr?.[0] : dArr?.reduce((a: number, b: number) => a + b) : 0
     }
 
@@ -204,7 +247,7 @@ export const Main: FC = (): JSX.Element => {
                                 <td className="table-td text-center td-bold">{getTotals(k, undefined, "remind_end_sum")}</td>
                             </tr>
                             {
-                                collapsedParents?.includes(k) ? "" : Object.entries(v ?? {})?.map(([c, items], index) =>
+                                collapsedParents?.includes(k) ? "" : Object.entries(v ?? {})?.map(([c, items]: any, index) =>
                                     <React.Fragment key={index}>
                                         <tr>
                                             <td className="table-td pl-lg td-bold cursor-pointer"
@@ -230,27 +273,28 @@ export const Main: FC = (): JSX.Element => {
                                             <td className="table-td text-center td-bold">{getTotals(k, c, "remind_end_sum")}</td>
                                         </tr>
                                         {
-                                            collapsedCategories?.includes(c) ? "" : items?.map((itm, index) => <tr
-                                                key={index}>
-                                                <td className="table-td pl-lgx cursor-pointer">
-                                                    <p className="m-0 td-text fs-15">
-                                                        {index + 1}.
-                                                        <span className="text-blue-500">{itm?.name}</span>
-                                                    </p>
-                                                </td>
-                                                <td className="table-td text-center">{itm?.color?.name}</td>
-                                                <td className="table-td text-center">{itm?.unit}</td>
-                                                <td className="table-td text-center"></td>
-                                                <td className="table-td text-center">{itm?.last_price?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_start_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_start_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_income_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_income_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_outgo_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_outgo_sum?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_end_amount?.toLocaleString?.("fr-Ca")}</td>
-                                                <td className="table-td text-center">{itm?.remind_end_sum?.toLocaleString?.("fr-Ca")}</td>
-                                            </tr>)
+                                            collapsedCategories?.includes(c) ? "" : items?.map((itm: dataType, index: number) =>
+                                                <tr
+                                                    key={index}>
+                                                    <td className="table-td pl-lgx cursor-pointer">
+                                                        <p className="m-0 td-text fs-15">
+                                                            {index + 1}.
+                                                            <span className="text-blue-500">{itm?.name}</span>
+                                                        </p>
+                                                    </td>
+                                                    <td className="table-td text-center">{itm?.color?.name}</td>
+                                                    <td className="table-td text-center">{itm?.unit}</td>
+                                                    <td className="table-td text-center"></td>
+                                                    <td className="table-td text-center">{itm?.last_price?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_start_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_start_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_income_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_income_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_outgo_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_outgo_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_end_amount?.toLocaleString?.("fr-Ca")}</td>
+                                                    <td className="table-td text-center">{itm?.remind_end_sum?.toLocaleString?.("fr-Ca")}</td>
+                                                </tr>)
                                         }
                                     </React.Fragment>)
                             }
